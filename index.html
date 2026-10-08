@@ -1,372 +1,334 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الاستجابة للطوارئ - مشروع الفور سيزون - الدرعية</title>
+    <title>Emergency Response Portal - Diriyah Project</title>
+    <!-- Manifest for PWA Offline -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkVtZXJnZW5jeSBQb3J0YWwiLAogICJzaG9ydF9uYW1lIjogIkVtZXJnZW5jeSIsCiAgInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWwiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGY5ZmEiLAogICJ0aGVtZV9jb2xvciI6ICIjZGMzNTQ1Igp9">
     <style>
         :root {
-            --primary: #1e3a8a;
-            --danger: #dc2626;
-            --warning: #d97706;
-            --success: #16a34a;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #0f172a;
+            --primary: #dc3545;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --success: #198754;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--light); color: var(--dark); padding-bottom: 30px; }
+        
+        /* Language Selection Screen */
+        #lang-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(33, 37, 41, 0.95); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; padding: 20px; text-align: center;
         }
+        .lang-card { background: white; color: var(--dark); padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .lang-btn { display: block; width: 100%; padding: 14px; margin: 10px 0; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .btn-ar { background-color: #198754; color: white; }
+        .btn-en { background-color: #0d6efd; color: white; }
+        .btn-ur { background-color: #fd7e14; color: white; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            padding-bottom: 40px;
-        }
+        /* Header & Emergency Bar */
+        header { background: var(--dark); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--primary); }
+        .emergency-bar { background: var(--primary); color: white; text-align: center; padding: 12px; font-size: 18px; font-weight: bold; }
+        .emergency-bar a { color: white; text-decoration: none; border: 2px solid white; padding: 5px 15px; border-radius: 20px; margin-left: 10px; display: inline-block; background: rgba(0,0,0,0.2); }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 15px;
-        }
+        /* Container & Cards Grid */
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .section-title { margin: 20px 0 10px; font-size: 20px; border-inline-start: 4px solid var(--primary); padding-inline-start: 10px; }
+        
+        .grid-16 { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+        .case-card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .case-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 5px 15px rgba(220,53,69,0.2); }
 
-        .logos-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fff;
-            padding: 10px 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-bottom: 15px;
-        }
+        /* Switch Language Floating Button */
+        .switch-lang-btn { position: absolute; top: 15px; left: 15px; background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 
-        .logo-item {
-            font-size: 12px;
-            font-weight: bold;
-            color: #475569;
-            text-align: center;
-            border: 1px dashed #cbd5e1;
-            padding: 8px;
-            border-radius: 8px;
-            width: 30%;
-        }
+        /* Modal Overlay for Case Info */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; overflow-y: auto; padding: 20px; }
+        .modal-content { background: white; max-width: 600px; margin: 40px auto; padding: 20px; border-radius: 12px; position: relative; }
+        .close-btn { position: absolute; left: 15px; top: 15px; font-size: 24px; cursor: pointer; border: none; background: none; }
+        
+        /* Contact Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        th, td { padding: 12px 15px; text-align: start; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #343a40; color: white; }
+        .call-btn { background: var(--success); color: white; text-decoration: none; padding: 6px 12px; border-radius: 5px; font-weight: bold; font-size: 13px; display: inline-block; white-space: nowrap; }
 
-        header {
-            background: var(--primary);
-            color: white;
-            padding: 20px 15px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        header h1 {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-
-        .top-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .lang-btn, .pwa-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .view {
-            display: none;
-        }
-
-        .view.active {
-            display: block;
-        }
-
-        .nav-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            cursor: pointer;
-            border-right: 6px solid var(--primary);
-            transition: transform 0.2s;
-        }
-
-        html[dir="ltr"] .nav-card {
-            border-right: none;
-            border-left: 6px solid var(--primary);
-        }
-
-        .nav-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .nav-card.danger { border-color: var(--danger); }
-        .nav-card.warning { border-color: var(--warning); }
-
-        .nav-card h2 {
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .gov-numbers {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .gov-btn {
-            background: #ef4444;
-            color: white;
-            text-align: center;
-            padding: 12px 5px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .support-btns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .support-btn {
-            background: #e2e8f0;
-            color: #1e293b;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-        }
-
-        .section-title {
-            font-size: 15px;
-            font-weight: bold;
-            margin: 15px 0 10px 0;
-            color: #334155;
-        }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .chip-btn {
-            background: #ffffff;
-            border: 2px solid #cbd5e1;
-            padding: 12px 8px;
-            border-radius: 10px;
-            cursor: pointer;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 600;
-            color: #334155;
-            transition: all 0.2s;
-        }
-
-        .chip-btn.selected {
-            background: #dbeafe;
-            border-color: #2563eb;
-            color: #1e40af;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .submit-btn {
-            width: 100%;
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        .back-btn {
-            background: #64748b;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-bottom: 15px;
-        }
-
-        .urgent-call {
-            background: #fee2e2;
-            border: 1px solid #fca5a5;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-        }
-
-        .urgent-call a {
-            background: #dc2626;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .error-msg {
-            color: #dc2626;
-            font-size: 13px;
-            font-weight: bold;
-            display: none;
-            margin-top: 5px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-top: 15px;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: start;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 13px;
-        }
-
-        th {
-            background: #f1f5f9;
-            color: #334155;
-        }
-
-        .call-team-btn {
-            background: #16a34a;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 12px;
-        }
+        /* First Aid Kit Guide Section */
+        .kit-item { display: flex; align-items: center; background: #e9ecef; padding: 10px; border-radius: 6px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-
-    <!-- Top Logos Bar -->
-    <div class="logos-bar">
-        <div class="logo-item" id="logo-diriyah">شركة الدرعية<br>Diriyah Co.</div>
-        <div class="logo-item" id="logo-contractor">الشركة المنفذة<br>Main Contractor</div>
-        <div class="logo-item" id="logo-pmc">الاستشاري<br>Consultant</div>
+    <!-- 1. Language Selection Screen -->
+    <div id="lang-screen">
+        <div class="lang-card">
+            <h2>بوابة الطوارئ الميدانية<br><small style="font-size: 14px; color: #666;">Emergency Portal</small></h2>
+            <p style="margin: 15px 0; font-size: 14px;">اختر اللغة للبدء / Select Language / زبان منتخب کریں</p>
+            <button class="lang-btn btn-ar" onclick="setLang('ar')">العربية</button>
+            <button class="lang-btn btn-en" onclick="setLang('en')">English</button>
+            <button class="lang-btn btn-ur" onclick="setLang('ur')">اردو</button>
+        </div>
     </div>
 
-    <!-- Header -->
-    <header>
-        <h1 id="title-text">بوابة الاستجابة للطوارئ - مشروع الفور سيزون - الدرعية</h1>
-        <div class="top-controls">
-            <button class="pwa-btn" onclick="alert('جاهز للتثبيت')">📲 <span id="pwa-text">تثبيت البوابة</span></button>
-            <div>
-                <button class="lang-btn" onclick="switchLang('ar')">العربية</button>
-                <button class="lang-btn" onclick="switchLang('en')">English</button>
-                <button class="lang-btn" onclick="switchLang('ur')">اردو</button>
-            </div>
-        </div>
+    <!-- 2. Header & Quick Call Bar -->
+    <header style="position: relative;">
+        <button class="switch-lang-btn" onclick="showLangScreen()">🌐 Change Language</button>
+        <h1 id="portal-title">بوابة الاستجابة للطوارئ - مشروع الدرعية</h1>
     </header>
+    <div class="emergency-bar">
+        <span id="txt-direct-call">الرقم الموحد للطوارئ (24/7):</span>
+        <a href="tel:0501160516">📞 050 116 0516</a>
+    </div>
 
-    <!-- VIEW 1: MAIN DASHBOARD -->
-    <div id="view-main" class="view active">
-        <div class="nav-card danger" onclick="showView('view-injury')">
-            <h2 id="btn-injury">🏥 إبلاغ عن إصابة فرد داخل الموقع</h2>
+    <div class="container">
+        
+        <!-- 3. Incident Cases Grid (16 Cases) -->
+        <h2 class="section-title" id="txt-cases-title">الإبلاغ المباشر وحالات الطوارئ (16 حالة)</h2>
+        <div class="grid-16" id="cases-grid"></div>
+
+        <!-- 4. Emergency Management Team Table -->
+        <h2 class="section-title" id="txt-team-title">جدول فريق إدارة الطوارئ الميداني</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Emergency Team Role</th>
+                        <th>Name</th>
+                        <th>Project Position Held</th>
+                        <th>Direct Call</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Incident Commander</td><td>MAHMOUD ABDO</td><td>PROJECT MANAGER</td><td><a href="tel:0560670704" class="call-btn">📞 056 067 0704</a></td></tr>
+                    <tr><td>Deputy Incident Commander</td><td>SAYED ABDELGALIL</td><td>CONST. MANAGER</td><td><a href="tel:0541722783" class="call-btn">📞 054 172 2783</a></td></tr>
+                    <tr><td>Liaison/Communications Lead (logistics)</td><td>MOHAMED RIDWAN</td><td>LOGISTIC</td><td><a href="tel:0556001286" class="call-btn">📞 055 600 1286</a></td></tr>
+                    <tr><td>Safety Lead</td><td>MOHAMED MUBIN</td><td>H&S MANAGER</td><td><a href="tel:0555432563" class="call-btn">📞 055 543 2563</a></td></tr>
+                    <tr><td>Field Commander</td><td>SELIM METWALLY</td><td>SITE ENGINEER</td><td><a href="tel:0594985259" class="call-btn">📞 059 498 5259</a></td></tr>
+                    <tr><td>Assembly point Lead</td><td>SWAMY KUMAR</td><td>SAFETY SUPERVISOR</td><td><a href="tel:0546256375" class="call-btn">📞 054 625 6375</a></td></tr>
+                    <tr><td>Staging Area Lead</td><td>ALI RADWAN</td><td>SITE SUPERVISOR</td><td><a href="tel:0575261772" class="call-btn">📞 057 526 1772</a></td></tr>
+                    <tr><td>Emergency Team Member (Area Warden)</td><td>KEVIN MALVAR</td><td>ENGINEER</td><td><a href="tel:0539062539" class="call-btn">📞 053 906 2539</a></td></tr>
+                    <tr><td>Emergency Team Member (Area Warden)</td><td>SAYED ALI</td><td>FOREMAN</td><td><a href="tel:0573944243" class="call-btn">📞 057 394 4243</a></td></tr>
+                    <tr><td>Security Personnel</td><td>Md. HASSAN</td><td>SECURITY</td><td><a href="tel:0573944243" class="call-btn">📞 057 394 4243</a></td></tr>
+                    <tr><td>Medical Response Team (Paramedic/Doctor)</td><td>MUHAMED MARIE</td><td>SITE NURSE</td><td><a href="tel:0570389524" class="call-btn">📞 057 038 9524</a></td></tr>
+                    <tr><td>First aider</td><td>HUSSAIN SAID</td><td>SAFETY SUPERVISOR</td><td><a href="tel:0539504653" class="call-btn">📞 053 950 4653</a></td></tr>
+                </tbody>
+            </table>
         </div>
 
-        <div class="nav-card warning" onclick="showView('view-incident')">
-            <h2 id="btn-incident">⚠️ إبلاغ عن حادث داخل الموقع</h2>
-        </div>
+    </div>
 
-        <div class="nav-card" onclick="showView('view-guides')">
-            <h2 id="btn-guides">📋 إرشادات التعامل مع الإصابات والحوادث (16 حالة وصناديق الإسعافات)</h2>
-        </div>
+    <!-- Case Modal -->
+    <div id="case-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h3 id="modal-case-title" style="color: var(--primary); margin-bottom: 15px;"></h3>
+            
+            <p><strong id="lbl-box-loc">موقع أقرب صندوق إسعافات:</strong> <span id="modal-box-loc" style="color: var(--success); font-weight: bold;"></span></p>
+            <hr style="margin: 10px 0;">
+            
+            <h4 id="lbl-steps">إرشادات التعامل السريع:</h4>
+            <ul id="modal-instructions" style="margin: 10px 20px; line-height: 1.6;"></ul>
+            
+            <h4 id="lbl-kit" style="margin-top: 15px;">مستلزمات الصندوق المطلوبة:</h4>
+            <div id="modal-kit-items"></div>
 
-        <div class="support-btns">
-            <button class="support-btn" onclick="getLocation()" id="btn-loc">📍 تحديد موقعي بالمشروع</button>
-            <button class="support-btn" onclick="alert('جاهز استقبال الملفات')" id="btn-map">📌 خريطة نقاط التجمع</button>
+            <button onclick="dispatchTelegramAlert()" id="btn-telegram" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; margin-top: 20px; cursor: pointer;">
+                🚨 إرسال تنبيه فورى لفريق الطوارئ
+            </button>
         </div>
+    </div>
 
-        <div class="gov-numbers">
-            <a href="tel:997" class="gov-btn">🚑 997<br><span id="gov-rc">الهلال الأحمر</span></a>
-            <a href="tel:998" class="gov-btn">🚒 998<br><span id="gov-cd">الدفاع المدني</span></a>
-            <a href="tel:911" class="gov-btn">👮 911<br><span id="gov-911">الطوارئ الموحدة</span></a>
-        </div>
+    <script>
+        const uiText = {
+            ar: {
+                title: "بوابة الاستجابة للطوارئ - مشروع الدرعية",
+                directCall: "الرقم الموحد للطوارئ (24/7):",
+                casesTitle: "الإبلاغ المباشر وحالات الطوارئ (16 حالة)",
+                teamTitle: "جدول فريق إدارة الطوارئ الميداني",
+                boxLoc: "موقع أقرب صندوق إسعافات أولية:",
+                steps: "إرشادات التعامل السريع (First Aid Guidelines):",
+                kit: "مستلزمات الصندوق المطلوبة:",
+                btnAlert: "🚨 إرسال تنبيه فورى لفريق الطوارئ (Telegram Alert)",
+                alertSent: "تم إرسال إشعار الطوارئ الفوري بنجاح!"
+            },
+            en: {
+                title: "Emergency Response Portal - Diriyah Project",
+                directCall: "24/7 Emergency Hot Line:",
+                casesTitle: "Incident Reporting & Emergency Scenarios (16 Cases)",
+                teamTitle: "Emergency Management Team Contacts",
+                boxLoc: "Nearest First Aid Kit Location:",
+                steps: "First Aid Guidelines:",
+                kit: "Required First Aid Supplies:",
+                btnAlert: "🚨 Dispatch Emergency Alert (Telegram Alert)",
+                alertSent: "Emergency dispatch alert sent successfully!"
+            },
+            ur: {
+                title: "ہنگامی امدادی پورٹل - درعیہ پروجیکٹ",
+                directCall: "24/7 ہنگامی نمبر:",
+                casesTitle: "ہنگامی صورتحال کی اطلاع (16 کیسز)",
+                teamTitle: "ایمرجنسی مینجمنٹ ٹیم کی فہرست",
+                boxLoc: "قریب ترین فرسٹ ایڈ باکس کا مقام:",
+                steps: "فوری طبی امداد کی ہدایات:",
+                kit: "ضروری فرسٹ ایڈ سامان:",
+                btnAlert: "🚨 ہنگامی الارم بھیجیں (Telegram Alert)",
+                alertSent: "ہنگامی اطلاع کامیا بیکی سے بھیج دی گئی ہے!"
+            }
+        };
 
-        <div class="section-title" id="team-title">👥 فريق إدارة الطوارئ الميداني للمشروع</div>
-        <table>
-            <thead>
-                <tr>
-                    <th id="th-role">الوظيفة</th>
-                    <th id="th-name">الاسم</th>
-                    <th id="th-action">الاتصال</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td id="role-cmd">قائد فريق الطوارئ (Commander)</td>
-                    <td class="status-pending">جاري الاعتماد</td>
-                    <td><a href="tel:0500000000" class="call-team-btn call-txt">📞 اتصال</a></td>
-                </tr>
-                <tr>
-                    <td id="role-hse">مدير السلامة (HSE Manager)</td>
-                    <td class="status-pending">جاري الاعتماد</td>
-                    <td><a href="tel:0500000000" class="call-team-btn call-txt">📞 اتصال</a></td>
-                </tr>
-                <tr>
-                    <td id="role-medic">مسع
+        const casesData = {
+            ar: [
+                { id: 1, title: "حريق / انفجار", icon: "🔥", box: "صندوق أ - بوابات الموقع والمكاتب الميدانية", steps: ["أخلِ المكان فوراً واضغط زر الإنذار", "توجّه إلى أقرب نقطة تجمع (Assembly Point)", "لا تحاول إطفاء الحريق الكبيرة بنفسك"], kit: ["طفّاية حريق حرارية", "بطانية حريق"] },
+                { id: 2, title: "تسرب غاز / مواد كيميائية", icon: "⚠️", box: "صندوق ب - منطقة التخزين والمعدات", steps: ["ابتعد لعكس اتجاه الريح فوراً", "لا تشعل أي شرر أو أدوات غير مضادة للانفجار", "غطِّ الفم بقماش رطب"], kit: ["كمامة كيميائية SCBA", "قفازات حماية"] },
+                { id: 3, title: "انهيار حفريات / سكلات", icon: "🏗️", box: "صندوق ج - قطاع الحفريات الرئيسي", steps: ["ابتعد عن حواف الحفرية المنهارة", "لا تحاول الحفر بيديك دون تأمين الحواف", "أبلغ عن عدد الأشخاص المحتجزين"], kit: ["رباط تثبيت", "نقالة طوارئ"] },
+                { id: 4, title: "صعق كهربائي", icon: "⚡", box: "صندوق د - لوحة التوزيع الرئيسية", steps: ["لا تلمس المصاب بيديك المجردة", "افصل المصدر الكهربائي أولاً أو استخدم عصا خشبية", "تأكد من تنفس المصاب"], kit: ["قفازات عازلة", "ضمادات حروق"] },
+                { id: 5, title: "احتجاز بمكان مغلق", icon: "🚪", box: "صندوق هـ - خزانات وأنابيب الموقع", steps: ["لا تدخل الإنقاذ دون أجهزة تنفس SCBA", "قم بتهوية المكان من الخارج إن أمكن", "تواصل مع المحتجز لتهدئته"], kit: ["جهاز أكسجين محمول", "حبل إنقاذ"] },
+                { id: 6, title: "سقوط من ارتفاع", icon: "🧗", box: "صندوق و - منطقة السقالات والرافعات", steps: ["لا تحرك المصاب نهائياً للحد من إصابات العمود الفقري", "ثبت الرأس والرقبة بنفس الوضعية", "غطِّ المصاب ببطانية حماية"], kit: ["رقبة تثبيت (C-Collar)", "بطانية حرارية"] },
+                { id: 7, title: "نزيف حاد / قطع عميق", icon: "🩸", box: "صندوق أ - العيادة الميدانية", steps: ["اضغط بقوة على مكان النزيف بقماش معقم", "ارفع العضو المصاب أعلى من القلب", "لا تزل الضمادة الأولى الممتلئة بالدم"], kit: ["ضمادات معقمة", "رباط ضاغط"] },
+                { id: 8, title: "توقف تنفس / إغماء", icon: "🫀", box: "صندوق أ - العيادة الميدانية", steps: ["ضع المصاب على ظهره وافتح مجرى الهواء", "ابدأ الإنعاش القلبي الرئوي CPR إذا كنت مدرباً", "اطلب جهاز CPR الميداني"], kit: ["قناع تنفس CPR", "جهاز إنعاش"] },
+                { id: 9, title: "كسور / التواءات", icon: "🦴", box: "صندوق ب - منطقة الإنشاءات", steps: ["أثبت الجزء المصاب ولا تعدل العظم المكسور", "ضع ثلجاً ملفوفاً بقماش على الورم", "امنع تحريك المفصل المصاب"], kit: ["جبيرة مؤقتة", "رباط مثلث"] },
+                { id: 10, title: "إجهاد حراري / ضربة شمس", icon: "☀️", box: "صندوق ج - استراحة العمال والمظلات", steps: ["انقل المصاب فوراً لمكان مكيف أو مظلل", "رش الجسم بماء فاتر ورطب ملابسه", "أعطه رشقات ماء إذا كان بوعيه"], kit: ["أملاح تعويضية", "كمادات باردة"] },
+                { id: 11, title: "إصابة عين / رش كيميائي", icon: "👁️", box: "صندوق د - محطة غسيل العيون", steps: ["اغسل العين بماء نظيف متواصل لمدة 15 دقيقة", "لا تفرك العين نهائياً", "غطِّ العين بقماش معقم دون ضغط"], kit: ["محلول غسيل العين", "ضمادة عين معقمة"] },
+                { id: 12, title: "حروق حرارية / كيميائية", icon: "🩹", box: "صندوق أ - المطبخ والورش الميدانية", steps: ["اسكب ماء جارياً بارداً لمدة 10-15 دقيقة", "لا تفتح الفقاقيع ولا تضع معجوناً", "انزع الملابس غير الملتصقة بحذر"], kit: ["مرهم/جل حروق", "ضمادة غير ملتصقة"] },
+                { id: 13, title: "انقلاب / حادث معدات ثقيلة", icon: "🚜", box: "صندوق هـ - حركة الشاحنات والورشة", steps: ["أوقف الحركة الميدانية وأخلِ المنطقة", "ابقَ على مسافة آمنة من الأحمال المعلقة", "لا تقترب من الخطوط الكهربائية المقطوعة"], kit: ["حقيبة إسعافات شاحنة", "طوق إشارات"] },
+                { id: 14, title: "انحشار طرف بآلة", icon: "⚙️", box: "صندوق ب - ورشة الحدادة والنجارة", steps: ["اضغط زر الإيقاف الإجباري E-Stop فوراً", "لا تعكس حركة الآلة يدوياً", "هدىء المصاب لحين وصول الصيانة والمسعف"], kit: ["رباط ضاغط", "ضمادة معقمة"] },
+                { id: 15, title: "دهس / تصادم مركبات", icon: "🚗", box: "صندوق أ - البوابة الرئيسية DG-GATE-4", steps: ["أوقف حركة المرور حول موقع الحادث", "افصل محرك المركبة لمنع الحريق", "لا تحرك المصاب إلا عند خطر حريق وشيك"], kit: ["حقيبة إسعاف شريكة", "مثلث تحذيري"] },
+                { id: 16, title: "طقس قاسي / عواصف", icon: "🌪️", box: "صندوق ج - مبنى الإدارة والملاجئ", steps: ["أوقف الأعمال على الارتفاعات والأوناش", "توجه للمباني أو الملاجئ المخصصة", "ثبت المواد القابلة للتطاير"], kit: ["حقيبة الطوارئ العامة", "مصباح طوارئ"] }
+            ],
+            en: [
+                { id: 1, title: "Fire / Explosion", icon: "🔥", box: "Box A - Site Gates & Offices", steps: ["Evacuate immediately & press alarm", "Proceed to nearest Assembly Point", "Do not attempt fighting large fires"], kit: ["Fire Extinguisher", "Fire Blanket"] },
+                { id: 2, title: "Gas / Chemical Leak", icon: "⚠️", box: "Box B - Chemical Storage Area", steps: ["Move upwind immediately", "Avoid sparks or non-EX tools", "Cover mouth with damp cloth"], kit: ["Chemical Respirator SCBA", "Safety Gloves"] },
+                { id: 3, title: "Excavation / Collapse", icon: "🏗️", box: "Box C - Main Excavation Sector", steps: ["Stay away from unstable edges", "Do not dig manually without shoring", "Report trapped personnel count"], kit: ["Securing Straps", "Emergency Stretcher"] },
+                { id: 4, title: "Electric Shock", icon: "⚡", box: "Box D - Main Distribution Panel", steps: ["Do not touch victim bare-handed", "Isolate power source or use wooden stick", "Check victim breathing"], kit: ["Insulation Gloves", "Burn Dressing"] },
+                { id: 5, title: "Confined Space Trapped", icon: "🚪", box: "Box E - Tanks & Pipes Area", steps: ["Do not enter without SCBA gear", "Ventilate area from outside if possible", "Keep trapped worker calm"], kit: ["Portable Oxygen", "Rescue Rope"] },
+                { id: 6, title: "Fall from Height", icon: "🧗", box: "Box F - Scaffolding Zone", steps: ["Do not move victim to prevent spinal injury", "Immobilize head and neck", "Cover with thermal blanket"], kit: ["Cervical Collar", "Thermal Blanket"] },
+                { id: 7, title: "Severe Bleeding / Cut", icon: "🩸", box: "Box A - Field Clinic", steps: ["Apply direct firm pressure with sterile pad", "Elevate injured limb above heart", "Do not remove blood-soaked dressing"], kit: ["Sterile Gauze", "Elastic Bandage"] },
+                { id: 8, title: "Unconscious / Cardiac Arrest", icon: "🫀", box: "Box A - Field Clinic", steps: ["Place on back and open airway", "Start CPR if trained", "Request AED CPR device"], kit: ["CPR Mask", "Resuscitation Kit"] },
+                { id: 9, title: "Fracture / Sprain", icon: "🦴", box: "Box B - Construction Zone", steps: ["Immobilize limb, do not straighten bone", "Apply ice wrapped in cloth", "Prevent joint movement"], kit: ["Splint", "Triangular Bandage"] },
+                { id: 10, title: "Heat Stress / Sunstroke", icon: "☀️", box: "Box C - Rest Shelter", steps: ["Move victim to shaded/AC area", "Cool body with water & wet clothes", "Give small water sips if conscious"], kit: ["ORs Electrolytes", "Cooling Compresses"] },
+                { id: 11, title: "Eye Injury / Chemical Splash", icon: "👁️", box: "Box D - Eyewash Station", steps: ["Flush eye with clean water for 15 mins", "Do not rub eyes", "Cover lightly with sterile pad"], kit: ["Eye Wash Solution", "Sterile Eye Pad"] },
+                { id: 12, title: "Thermal / Chemical Burn", icon: "🩹", box: "Box A - Site Kitchen & Workshop", steps: ["Cool burn with cool running water for 10-15 mins", "Do not pop blisters or apply toothpaste", "Remove loose clothing carefully"], kit: ["Burn Gel", "Non-adherent Dressing"] },
+                { id: 13, title: "Heavy Equipment Rollover", icon: "🚜", box: "Box E - Fleet & Workshop Zone", steps: ["Stop site operations and clear area", "Keep safe distance from suspended loads", "Stay away from downed power lines"], kit: ["Vehicle First Aid Kit", "Warning Flag"] },
+                { id: 14, title: "Machine Entrapment", icon: "⚙️", box: "Box B - Carpentry & Steel Shop", steps: ["Press Emergency Stop (E-Stop) immediately", "Do not reverse machinery manually", "Reassure worker until rescue team arrives"], kit: ["Compressive Bandage", "Sterile Dressing"] },
+                { id: 15, title: "Vehicle Collision / Hit", icon: "🚗", box: "Box A - Main Gate DG-GATE-4", steps: ["Control traffic around scene", "Switch off vehicle engine", "Do not move victim unless fire hazard"], kit: ["First Aid Kit", "Warning Triangle"] },
+                { id: 16, title: "Severe Weather / Storm", icon: "🌪️", box: "Box C - Admin Building Shelter", steps: ["Halt high-elevation and crane works", "Seek shelter in designated buildings", "Secure loose materials"], kit: ["Emergency Kit", "Flashlight"] }
+            ],
+            ur: [
+                { id: 1, title: "آگ / دھماکہ", icon: "🔥", box: "باکس A - سائٹ گیٹس اور دفاتر", steps: ["فوری طور پر باہر نکلیں اور الارم بجائیں", "قریب ترین اسمبلی پوائنٹ پر جائیں", "بڑی آگ کو خود بجھانے کی کوشش نہ کریں"], kit: ["فائر ایکسٹنگوشر", "فائر بلینکٹ"] },
+                { id: 2, title: "گیس / کیمیائی رساو", icon: "⚠️", box: "باکس B - کیمیکل اسٹوریج ایریا", steps: ["ہوا کی مخالف سمت میں منتقل ہوں", "چنگاری پیدا کرنے والے آلات سے پرہیز کریں", "منہ کو گیلے کپڑے سے ڈھانپیں"], kit: ["کیمیکل ماسک SCBA", "حفاظتی دستانے"] },
+                { id: 3, title: "کھدائی / سہاروں کا گرنا", icon: "🏗️", box: "باکس C - کھدائی کا شعبہ", steps: ["غیر مستحکم کنارے سے دور رہیں", "بغیر تحفظ کے کھدائی نہ کریں", "پھنسے ہوئے لوگوں کی تعداد رپورٹ کریں"], kit: ["پٹی اور بیلٹ", "ہنگامی سٹریچر"] },
+                { id: 4, title: "بجلی کا جھٹکا", icon: "⚡", box: "باکس D - مین ڈسٹری بیوشن پینل", steps: ["متاثرہ شخص کو ننگے ہاتھوں سے نہ چھوئین", "پہلے پاور سورس بند کریں", "سانس کی جانچ کریں"], kit: ["انسولیشن دستانے", "برن پٹی"] },
+                { id: 5, title: "تنگ جگہ میں پھنس جانا", icon: "🚪", box: "باکس E - ٹینک اور پائپ زون", steps: ["SCBA آلات کے بغیر داخل نہ ہوں", "باہر سے وینٹیلیشن فراہم کریں", "متاثرہ شخص کو تسلی دیں"], kit: ["آکسیجن کٹ", "بچاؤ کی رسی"] },
+                { id: 6, title: "بلندی سے گرنا", icon: "🧗", box: "باکس F - اسکافولڈنگ زون", steps: ["متاثرہ شخص کو بالکل نہ ہلائیں", "گردن اور سر کو ایک ہی حالت میں رکھیں", "تھرمل کمبل سے ڈھانپیں"], kit: ["گردن کا کالر", "تھرمل کمبل"] },
+                { id: 7, title: "شدید خون بہنا / گہرا کٹ", icon: "🩸", box: "باکس A - فیلڈ کلینک", steps: ["پاک کپڑے سے زغم پر براہ راست دباؤ ڈالیں", "متاثرہ عضو کو دل سے اوپر اٹھائیں", "خون سے بھری پٹی نہ ہٹائیں"], kit: ["سٹرائل پٹی", "پریشر بینڈیج"] },
+                { id: 8, title: "بے ہوشی / سانس رکنا", icon: "🫀", box: "باکس A - فیلڈ کلینک", steps: ["متاثرہ کو پیٹھ کے بل لٹائیں اور سانس کی نالی کھولیں", "CPR شروع کریں اگر آپ تربیت یافتہ ہیں", "AED ڈیوائس طلب کریں"], kit: ["CPR ماسک", "بحالی کٹ"] },
+                { id: 9, title: "ہڈی کا ٹوٹنا / موچ", icon: "🦴", box: "باکس B - کنسٹرکشن زون", steps: ["متاثرہ حصے کو حرکت نہ دیں", "برف کپڑے میں لپیٹ کر لگائیں", "جوڑ کو ہلنے سے روکیں"], kit: ["عارضی کھپچی", "مثلث پٹی"] },
+                { id: 10, title: "ہیٹ اسٹروک / دھوپ کی شدت", icon: "☀️", box: "باکس C - ورکرز شیلٹر", steps: ["متاثرہ کو فوری سائے میں لے جائیں", "جسم پر ٹھنڈا پانی چھڑکیں", "ہوش میں ہو تو پانی کے گھونٹ دیں"], kit: ["او آر ایس نمکیات", "کولنگ پیڈ"] },
+                { id: 11, title: "آنکھ کی چوٹ / کیمیکل جانا", icon: "👁️", box: "باکس D - آئی واش اسٹیشن", steps: ["آنکھ کو 15 منٹ مسلسل صاف پانی سے دھوئین", "آنکھ کو بالکل نہ رگڑیں", "پاک پٹی سے ہلکا ڈھانپیں"], kit: ["آئی واش لوشن", "آئی پیڈ"] },
+                { id: 12, title: "جلنا (حرارتی یا کیمیائی)", icon: "🩹", box: "باکس A - کچن و ورکشاپ", steps: ["10-15 منٹ بہتے ٹھنڈے پانی کے نیچے رکھیں", "چھالے نہ پھوڑیں اور نہ ٹوتھ پیسٹ لگائیں", "کپڑے احتیاط سے ہٹائیں"], kit: ["برن جیل", "غیر چپکنے والی پٹی"] },
+                { id: 13, title: "بھاری مشینری کا الٹنا", icon: "🚜", box: "باکس E - فلیکٹ زون", steps: ["کام روکیں اور علاقہ خالی کرائیں", "لٹکے ہوئے بوجھ سے دور رہیں", "گری ہوئی تاروں کے قریب نہ جائیں"], kit: ["گاڑی فرسٹ ایڈ کٹ", "وارننگ جھنڈا"] },
+                { id: 14, title: "مشین میں عضو کا پھنسنا", icon: "⚙️", box: "باکس B - کارپینٹری ورکشاپ", steps: ["فوری ہنگامی اسٹاپ (E-Stop) دبائیں", "مشین کو الٹا نہ گھمائیں", "ریسکیو ٹیم کا انتظار کریں"], kit: ["پریشر بینڈیج", "سٹرائل پٹی"] },
+                { id: 15, title: "گاڑی کا حادثہ / ٹکر", icon: "🚗", box: "باکس A - مین گیٹ DG-GATE-4", steps: ["حادثے کے گرد ٹریفک روکیں", "گاڑی کا انجن بند کریں", "متاثرہ کو نہ ہلائیں سوائے آگ کے خطرے کے"], kit: ["فرسٹ ایڈ کٹ", "وارننگ ٹرائی اینگل"] },
+                { id: 16, title: "شدید موسم / طوفان", icon: "🌪️", box: "باکس C - ایڈمن شیلٹر", steps: ["بلندی پر کام فوری روک دیں", "مخصوص شیلٹر میں پناہ لیں", "اُڑنے والے سامان کو محفوظ کریں"], kit: ["ہنگامی سامان کٹ", "ٹارچ لائٹ"] }
+            ]
+        };
+
+        let currentLang = 'ar';
+
+        function showLangScreen() {
+            document.getElementById('lang-screen').style.display = 'flex';
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.getElementById('lang-screen').style.display = 'none';
+            
+            // Adjust RTL / LTR
+            const htmlRoot = document.getElementById('html-root');
+            if (lang === 'ar' || lang === 'ur') {
+                htmlRoot.setAttribute('dir', 'rtl');
+                htmlRoot.setAttribute('lang', lang);
+            } else {
+                htmlRoot.setAttribute('dir', 'ltr');
+                htmlRoot.setAttribute('lang', 'en');
+            }
+
+            // Translate Static UI Elements
+            document.getElementById('portal-title').innerText = uiText[lang].title;
+            document.getElementById('txt-direct-call').innerText = uiText[lang].directCall;
+            document.getElementById('txt-cases-title').innerText = uiText[lang].casesTitle;
+            document.getElementById('txt-team-title').innerText = uiText[lang].teamTitle;
+            document.getElementById('lbl-box-loc').innerText = uiText[lang].boxLoc;
+            document.getElementById('lbl-steps').innerText = uiText[lang].steps;
+            document.getElementById('lbl-kit').innerText = uiText[lang].kit;
+            document.getElementById('btn-telegram').innerText = uiText[lang].btnAlert;
+
+            renderCases();
+            localStorage.setItem('portal_lang', lang);
+        }
+
+        function renderCases() {
+            const grid = document.getElementById('cases-grid');
+            grid.innerHTML = '';
+            casesData[currentLang].forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'case-card';
+                card.onclick = () => openModal(c);
+                card.innerHTML = `<span style="font-size:32px; display:block; margin-bottom:8px;">${c.icon}</span><strong>${c.title}</strong>`;
+                grid.appendChild(card);
+            });
+        }
+
+        let selectedCase = null;
+        function openModal(c) {
+            selectedCase = c;
+            document.getElementById('modal-case-title').innerText = c.icon + " " + c.title;
+            document.getElementById('modal-box-loc').innerText = c.box;
+            
+            const ul = document.getElementById('modal-instructions');
+            ul.innerHTML = '';
+            c.steps.forEach(s => { const li = document.createElement('li'); li.innerText = s; ul.appendChild(li); });
+            
+            const kitDiv = document.getElementById('modal-kit-items');
+            kitDiv.innerHTML = '';
+            c.kit.forEach(k => {
+                const item = document.createElement('div');
+                item.className = 'kit-item';
+                item.innerHTML = `<span style="font-size:20px; margin-inline-end:10px;">🩺</span><strong>${k}</strong>`;
+                kitDiv.appendChild(item);
+            });
+
+            document.getElementById('case-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('case-modal').style.display = 'none';
+        }
+
+        function dispatchTelegramAlert() {
+            if (!selectedCase) return;
+            alert(uiText[currentLang].alertSent + "\n" + selectedCase.title);
+            closeModal();
+        }
+
+        // Auto load saved language or show selector
+        window.onload = () => {
+            const savedLang = localStorage.getItem('portal_lang');
+            if (savedLang) {
+                setLang(savedLang);
+            } else {
+                setLang('ar');
+            }
+        };
+
+        // PWA Offline Cache Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGV2ZW50ID0+IGV2ZW50LnJlc3BvbmRXaXRoKGZldGNoKGV2ZW50LnJlcXVlc3QpLmNhdGNoKCgpID0+IGNhY2hlcy5tYXRjaChldmVudC5yZXF1ZXN0KSkpKTs=');
+            });
+        }
+    </script>
+</body>
+</html>
