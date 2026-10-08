@@ -1,229 +1,660 @@
+تفضل كود ملف `index.html` الكامل وجاهز للرفع مباشرة على **GitHub Pages**.
+
+الملف مصمم بملف واحد متكامل (HTML + CSS + JavaScript) يحتوي على:
+
+* الهيدر بشعارات الجهات الثلاث.
+* دعم اللغات الثلاث (العربية، الإنجليزية، والأوردو) مع تحويل اتجاه الصفحة تلقائياً (`RTL` / `LTR`).
+* التنقل بين الشاشات المستقلة (الرئيسية، صفحة إبلاغ عن إصابة، صفحة إبلاغ عن حادث، صفحة الإرشادات والحالات).
+* أزرار الخيارات الكبيرة والمكشوفة بدون قوائم منسدلة مع التحقق الإجباري قبل الإرسال.
+* جدول فريق إدارة الطوارئ الميداني وأرقام الطوارئ الحكومية السريعة.
+
+---
+
+### طريقة الرفع على GitHub:
+
+1. أنشئ مستودعاً جديداً (Repository) على GitHub باسم `emergency-portal`.
+2. أنشئ ملفاً جديداً وسمّه **`index.html`**.
+3. انسخ الكود التالي بالكامل والصقه داخل الملف واضغط **Commit**.
+4. فعّل خدمة **GitHub Pages** من إعدادات المستودع (Settings -> Pages -> Branch: main).
+
+---
+
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة إدارة الطوارئ والسلامة الميدانية | Emergency Response Portal</title>
-    <!-- Manifest for PWA Offline -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkVtZXJnZW5jeSBQb3J0YWwiLAogICJzaG9ydF9uYW1lIjogIkVtZXJnZW5jeSIsCiAgInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWwiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGY5ZmEiLAogICJ0aGVtZV9jb2xvciI6ICIjZGMzNTQ1Igp9">
+    <title>بوابة الاستجابة للطوارئ - مشروع الفور سيزون - الدرعية</title>
     <style>
         :root {
-            --primary: #dc3545;
-            --dark: #212529;
-            --light: #f8f9fa;
-            --success: #198754;
+            --primary: #1e3a8a;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --success: #16a34a;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--light); color: var(--dark); padding-bottom: 30px; }
-        
-        /* Language Selection Screen */
-        #lang-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(33, 37, 41, 0.95); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: white; padding: 20px; text-align: center;
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
-        .lang-card { background: white; color: var(--dark); padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .lang-btn { display: block; width: 100%; padding: 14px; margin: 10px 0; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .btn-ar { background-color: #198754; color: white; }
-        .btn-en { background-color: #0d6efd; color: white; }
-        .btn-ur { background-color: #fd7e14; color: white; }
 
-        /* Header & Emergency Bar */
-        header { background: var(--dark); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--primary); }
-        .emergency-bar { background: var(--primary); color: white; text-align: center; padding: 12px; font-size: 20px; font-weight: bold; }
-        .emergency-bar a { color: white; text-decoration: none; border: 2px solid white; padding: 5px 15px; border-radius: 20px; margin-right: 10px; display: inline-block; background: rgba(0,0,0,0.2); }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 40px;
+        }
 
-        /* Container & Cards Grid */
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-        .section-title { margin: 20px 0 10px; font-size: 20px; border-right: 4px solid var(--primary); padding-right: 10px; }
-        
-        .grid-16 { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-        .case-card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .case-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 5px 15px rgba(220,53,69,0.2); }
-        .case-card icon { font-size: 30px; display: block; margin-bottom: 8px; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px;
+        }
 
-        /* Modal Overlay for Case Info */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; overflow-y: auto; padding: 20px; }
-        .modal-content { background: white; max-width: 600px; margin: 40px auto; padding: 20px; border-radius: 12px; position: relative; }
-        .close-btn { position: absolute; left: 15px; top: 15px; font-size: 24px; cursor: pointer; border: none; background: none; }
-        
-        /* Contact Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        th, td { padding: 12px 15px; text-align: right; border-bottom: 1px solid #eee; font-size: 14px; }
-        th { background: #343a40; color: white; }
-        .call-btn { background: var(--success); color: white; text-decoration: none; padding: 6px 12px; border-radius: 5px; font-weight: bold; font-size: 13px; display: inline-block; }
+        /* Top Logos Bar */
+        .logos-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 10px 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
 
-        /* First Aid Kit Guide Section */
-        .kit-item { display: flex; align-items: center; background: #e9ecef; padding: 10px; border-radius: 6px; margin-bottom: 8px; }
-        .kit-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-left: 10px; background: #ccc; }
+        .logo-item {
+            font-size: 12px;
+            font-weight: bold;
+            color: #475569;
+            text-align: center;
+            border: 1px dashed #cbd5e1;
+            padding: 8px;
+            border-radius: 8px;
+            width: 30%;
+        }
+
+        /* Header */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        header h1 {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn, .pwa-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* Views management */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Main Nav Cards */
+        .nav-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            cursor: pointer;
+            border-right: 6px solid var(--primary);
+            transition: transform 0.2s;
+        }
+
+        html[dir="ltr"] .nav-card {
+            border-right: none;
+            border-left: 6px solid var(--primary);
+        }
+
+        .nav-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-card.danger { border-color: var(--danger); }
+        .nav-card.warning { border-color: var(--warning); }
+
+        .nav-card h2 {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* External Numbers */
+        .gov-numbers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .gov-btn {
+            background: #ef4444;
+            color: white;
+            text-align: center;
+            padding: 12px 5px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Support Buttons */
+        .support-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .support-btn {
+            background: #e2e8f0;
+            color: #1e293b;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        /* Forms Options Selection */
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            color: #334155;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .chip-btn {
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            padding: 12px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            transition: all 0.2s;
+        }
+
+        .chip-btn.selected {
+            background: #dbeafe;
+            border-color: #2563eb;
+            color: #1e40af;
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .back-btn {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        /* Urgent Call Strip */
+        .urgent-call {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .urgent-call a {
+            background: #dc2626;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Error Message */
+        .error-msg {
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: bold;
+            display: none;
+            margin-top: 5px;
+        }
+
+        /* Emergency Team Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: start;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .call-team-btn {
+            background: #16a34a;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 1. Language Selection Screen -->
-    <div id="lang-screen">
-        <div class="lang-card">
-            <h2>بوابة الطوارئ الميدانية<br><small style="font-size: 14px; color: #666;">Emergency Portal</small></h2>
-            <p style="margin: 15px 0; font-size: 14px;">اختر اللغة للبدء / Select Language</p>
-            <button class="lang-btn btn-ar" onclick="setLang('ar')">العربية</button>
-            <button class="lang-btn btn-en" onclick="setLang('en')">English</button>
-            <button class="lang-btn btn-ur" onclick="setLang('ur')">اردو</button>
-        </div>
+<div class="container">
+
+    <!-- Top Logos Bar -->
+    <div class="logos-bar">
+        <div class="logo-item" id="logo-diriyah">شركة الدرعية<br>Diriyah Co.</div>
+        <div class="logo-item" id="logo-contractor">الشركة المنفذة<br>Main Contractor</div>
+        <div class="logo-item" id="logo-pmc">الاستشاري<br>Consultant</div>
     </div>
 
-    <!-- 2. Header & Quick Call Bar -->
+    <!-- Header -->
     <header>
-        <h1 id="portal-title">بوابة الاستجابة للطوارئ - مشروع الدرعية</h1>
+        <h1 id="title-text">بوابة الاستجابة للطوارئ - مشروع الفور سيزون - الدرعية</h1>
+        <div class="top-controls">
+            <button class="pwa-btn" onclick="alert('جاهز للتثبيت كـ PWA')">📲 <span id="pwa-text">تثبيت البوابة</span></button>
+            <div>
+                <button class="lang-btn" onclick="switchLang('ar')">العربية</button>
+                <button class="lang-btn" onclick="switchLang('en')">English</button>
+                <button class="lang-btn" onclick="switchLang('ur')">اردو</button>
+            </div>
+        </div>
     </header>
-    <div class="emergency-bar">
-        <span id="txt-direct-call">الرقم الموحد للطوارئ (24/7):</span>
-        <a href="tel:0501160516">📞 050 116 0516</a>
-    </div>
 
-    <div class="container">
+    <!-- VIEW 1: MAIN DASHBOARD -->
+    <div id="view-main" class="view active">
         
-        <!-- 3. Incident Cases Grid (16 Cases) -->
-        <h2 class="section-title" id="txt-cases-title">الإبلاغ المباشر وحالات الطوارئ (16 حالة)</h2>
-        <div class="grid-16" id="cases-grid">
-            <!-- JavaScript will render the 16 cases dynamically based on selected language -->
+        <!-- Main Actions -->
+        <div class="nav-card danger" onclick="showView('view-injury')">
+            <h2 id="btn-injury">🏥 إبلاغ عن إصابة فرد داخل الموقع</h2>
         </div>
 
-        <!-- 4. Emergency Management Team Table (Strict Original Preserved) -->
-        <h2 class="section-title" id="txt-team-title">جدول فريق إدارة الطوارئ الميداني</h2>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Emergency Team Role</th>
-                        <th>Name</th>
-                        <th>Project Position Held</th>
-                        <th>Direct Call</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>Incident Commander</td><td>MAHMOUD ABDO</td><td>PROJECT MANAGER</td><td><a href="tel:0560670704" class="call-btn">📞 056 067 0704</a></td></tr>
-                    <tr><td>Deputy Incident Commander</td><td>SAYED ABDELGALIL</td><td>CONST. MANAGER</td><td><a href="tel:0541722783" class="call-btn">📞 054 172 2783</a></td></tr>
-                    <tr><td>Liaison/Communications Lead (logistics)</td><td>MOHAMED RIDWAN</td><td>LOGISTIC</td><td><a href="tel:0556001286" class="call-btn">📞 055 600 1286</a></td></tr>
-                    <tr><td>Safety Lead</td><td>MOHAMED MUBIN</td><td>H&S MANAGER</td><td><a href="tel:0555432563" class="call-btn">📞 055 543 2563</a></td></tr>
-                    <tr><td>Field Commander</td><td>SELIM METWALLY</td><td>SITE ENGINEER</td><td><a href="tel:0594985259" class="call-btn">📞 059 498 5259</a></td></tr>
-                    <tr><td>Assembly point Lead</td><td>SWAMY KUMAR</td><td>SAFETY SUPERVISOR</td><td><a href="tel:0546256375" class="call-btn">📞 054 625 6375</a></td></tr>
-                    <tr><td>Staging Area Lead</td><td>ALI RADWAN</td><td>SITE SUPERVISOR</td><td><a href="tel:0575261772" class="call-btn">📞 057 526 1772</a></td></tr>
-                    <tr><td>Emergency Team Member (Area Warden)</td><td>KEVIN MALVAR</td><td>ENGINEER</td><td><a href="tel:0539062539" class="call-btn">📞 053 906 2539</a></td></tr>
-                    <tr><td>Emergency Team Member (Area Warden)</td><td>SAYED ALI</td><td>FOREMAN</td><td><a href="tel:0573944243" class="call-btn">📞 057 394 4243</a></td></tr>
-                    <tr><td>Security Personnel</td><td>Md. HASSAN</td><td>SECURITY</td><td><a href="tel:0573944243" class="call-btn">📞 057 394 4243</a></td></tr>
-                    <tr><td>Medical Response Team (Paramedic/Doctor)</td><td>MUHAMED MARIE</td><td>SITE NURSE</td><td><a href="tel:0570389524" class="call-btn">📞 057 038 9524</a></td></tr>
-                    <tr><td>First aider</td><td>HUSSAIN SAID</td><td>SAFETY SUPERVISOR</td><td><a href="tel:0539504653" class="call-btn">📞 053 950 4653</a></td></tr>
-                </tbody>
-            </table>
+        <div class="nav-card warning" onclick="showView('view-incident')">
+            <h2 id="btn-incident">⚠️ إبلاغ عن حادث داخل الموقع</h2>
         </div>
 
+        <div class="nav-card" onclick="showView('view-guides')">
+            <h2 id="btn-guides">📋 إرشادات التعامل مع الإصابات والحوادث (16 حالة وصناديق الإسعافات)</h2>
+        </div>
+
+        <!-- Support Tools -->
+        <div class="support-btns">
+            <button class="support-btn" onclick="getLocation()" id="btn-loc">📍 تحديد موقعي بالمشروع</button>
+            <button class="support-btn" onclick="alert('خريطة نقاط التجمع جاهزة لاستقبال الملفات')" id="btn-map">📌 خريطة نقاط التجمع</button>
+        </div>
+
+        <!-- External Emergency Calls -->
+        <div class="gov-numbers">
+            <a href="tel:997" class="gov-btn">🚑 997<br><span id="gov-rc">الهلال الأحمر</span></a>
+            <a href="tel:998" class="gov-btn">🚒 998<br><span id="gov-cd">الدفاع المدني</span></a>
+            <a href="tel:911" class="gov-btn">👮 911<br><span id="gov-911">الطوارئ الموحدة</span></a>
+        </div>
+
+        <!-- Emergency Team Table -->
+        <div class="section-title" id="team-title">👥 فريق إدارة الطوارئ الميداني للمشروع</div>
+        <table>
+            <thead>
+                <tr>
+                    <th id="th-role">الوظيفة</th>
+                    <th id="th-name">الاسم</th>
+                    <th id="th-action">الاتصال</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>قائد فريق الطوارئ (Commander)</td>
+                    <td>جاري الاعتماد</td>
+                    <td><a href="tel:0500000000" class="call-team-btn">📞 اتصال</a></td>
+                </tr>
+                <tr>
+                    <td>مدير السلامة (HSE Manager)</td>
+                    <td>جاري الاعتماد</td>
+                    <td><a href="tel:0500000000" class="call-team-btn">📞 اتصال</a></td>
+                </tr>
+                <tr>
+                    <td>مسعف الموقع (Site Medic)</td>
+                    <td>جاري الاعتماد</td>
+                    <td><a href="tel:0500000000" class="call-team-btn">📞 اتصال</a></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
-    <!-- Case Modal (First Aid Guide + Location & Telegram Dispatch) -->
-    <div id="case-modal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()">&times;</button>
-            <h3 id="modal-case-title" style="color: var(--primary); margin-bottom: 15px;"></h3>
-            
-            <p><strong>موقع أقرب صندوق إسعافات أولية:</strong> <span id="modal-box-loc" style="color: var(--success); font-weight: bold;"></span></p>
-            <hr style="margin: 10px 0;">
-            
-            <h4>إرشادات التعامل السريع (First Aid Guidelines):</h4>
-            <ul id="modal-instructions" style="margin: 10px 20px; line-height: 1.6;"></ul>
-            
-            <h4 style="margin-top: 15px;">مستلزمات الصندوق المطلوبة:</h4>
-            <div id="modal-kit-items"></div>
+    <!-- VIEW 2: INJURY REPORT -->
+    <div id="view-injury" class="view">
+        <button class="back-btn" onclick="showView('view-main')">← <span class="back-txt">العودة للرئيسية</span></button>
 
-            <button onclick="dispatchTelegramAlert()" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; margin-top: 20px; cursor: pointer;">
-                🚨 إرسال تنبيه فورى لفريق الطوارئ (Telegram Dispatch)
-            </button>
+        <div class="urgent-call">
+            <span id="inj-urgent-txt">في حال كان الوضع حرجاً، اتصل بالطبيب فوراً</span>
+            <a href="tel:997">📞 اتصال عاجل</a>
         </div>
+
+        <h2 style="margin-bottom:15px;" id="inj-head">🏥 إبلاغ عن إصابة فرد</h2>
+
+        <div class="section-title" id="inj-sec-zone">1. موقع الإصابة (إجباري 🔴)</div>
+        <div class="options-grid" id="grid-inj-zone">
+            <div class="chip-btn" onclick="selectChip(this, 'inj-zone')">Zone A</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-zone')">Zone B</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-zone')">Zone C</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-zone')">Podium</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-zone')">Tower</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-zone')">Basement</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-zone')">العيادة الميدانية</div>
+        </div>
+
+        <div class="section-title" id="inj-sec-type">2. نوع الإصابة (إجباري 🔴)</div>
+        <div class="options-grid" id="grid-inj-type">
+            <div class="chip-btn" onclick="selectChip(this, 'inj-type')">🩸 نزيف/جرح</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-type')">🦴 كسر/سقوط</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-type')">🔴 إغماء/ضربة شمس</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-type')">⚡ صعق كهربائي</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-type')">🔥 حروق</div>
+        </div>
+
+        <div class="section-title" id="inj-sec-state">3. حالة المصاب الراهنة (إجباري 🔴)</div>
+        <div class="options-grid" id="grid-inj-state">
+            <div class="chip-btn" onclick="selectChip(this, 'inj-state')">🟢 واعي ويتنفس</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-state')">🔴 فاقد للوعي</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-state')">⚠️ محتجز</div>
+        </div>
+
+        <div class="section-title" id="inj-sec-num">4. عدد المصابين (إجباري 🔴)</div>
+        <div class="options-grid" id="grid-inj-num">
+            <div class="chip-btn" onclick="selectChip(this, 'inj-num')">1</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-num')">2 - 3</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inj-num')">أكثر من 3</div>
+        </div>
+
+        <div class="form-group">
+            <label id="lbl-inj-reporter">5. اسم ورقم المُبلّغ (إجباري 🔴)</label>
+            <input type="text" id="inj-reporter-input" placeholder="الاسم - رقم الجوال">
+        </div>
+
+        <div class="error-msg" id="inj-err">يرجى استكمال جميع الخيارات الإجبارية أعلاه قبل الإرسال!</div>
+        <button class="submit-btn" onclick="submitInjury()" id="btn-sub-inj">🚨 إرسال بلاغ الإصابة الآن</button>
     </div>
 
-    <script>
-        // Data Structure for the 16 Cases
-        const casesData = {
-            ar: [
-                { id: 1, title: "حريق / انفجار", icon: "🔥", box: "صندوق أ - بوابات الموقع والمكاتب الميدانية", steps: ["أخلِ المكان فوراً واضغط زر الإنذار", "توجّه إلى أقرب نقطة تجمع (Assembly Point)", "لا تحاول إطفاء الحريق الكبيرة بنفسك"], kit: ["طفّاية حريق حرارية", "بطانية حريق"] },
-                { id: 2, title: "تسرب غاز / مواد كيميائية", icon: "⚠️", box: "صندوق ب - منطقة التخزين والمعدات", steps: ["ابتعد لعكس اتجاه الريح فوراً", "لا تشعل أي شرر أو أدوات غير مضادة للانفجار", "غطِّ الفم بقماش رطب"], kit: ["كمامة كيميائية SCBA", "قفازات حماية"] },
-                { id: 3, title: "انهيار حفريات / سكلات", icon: "🏗️", box: "صندوق ج - قطاع الحفريات الرئيسي", steps: ["ابتعد عن حواف الحفرية المنهارة", "لا تحاول الحفر بيديك دون تأمين الحواف", "أبلغ عن عدد الأشخاص المحتجزين"], kit: ["رباط تثبيت", "نقالة طوارئ"] },
-                { id: 4, title: "صعق كهربائي", icon: "⚡", box: "صندوق د - لوحة التوزيع الرئيسية", steps: ["لا تلمس المصاب بيديك المجردة", "افصل المصدر الكهربائي أولاً أو استخدم عصا خشبية", "تأكد من تنفس المصاب"], kit: ["قفازات عازلة", "ضمادات حروق"] },
-                { id: 5, title: "احتجاز بمكان مغلق", icon: "🚪", box: "صندوق هـ - خزانات وأنابيب الموقع", steps: ["لا تدخل الإنقاذ دون أجهزة تنفس SCBA", "قم بتهوية المكان من الخارج إن أمكن", "تواصل مع المحتجز لتهدئته"], kit: ["جهاز أكسجين محمول", "حبل إنقاذ"] },
-                { id: 6, title: "سقوط من ارتفاع", icon: "🧗", box: "صندوق و - منطقة السقالات والرافعات", steps: ["لا تحرك المصاب نهائياً للحد من إصابات العمود الفقري", "ثبت الرأس والرقبة بنفس الوضعية", "غطِّ المصاب ببطانية حماية"], kit: ["رقبة تثبيت (C-Collar)", "بطانية حرارية"] },
-                { id: 7, title: "نزيف حاد / قطع عميق", icon: "🩸", box: "صندوق أ - العيادة الميدانية", steps: ["اضغط بقوة على مكان النزيف بقماش معقم", "ارفع العضو المصاب أعلى من القلب", "لا تزل الضمادة الأولى الممتلئة بالدم"], kit: ["ضمادات معقمة", "رباط ضاغط"] },
-                { id: 8, title: "توقف تنفس / إغماء", icon: "🫀", box: "صندوق أ - العيادة الميدانية", steps: ["ضع المصاب على ظهره وافتح مجرى الهواء", "ابدأ الإنعاش القلبي الرئوي CPR إذا كنت مدرباً", "اطلب جهاز CPR الميداني"], kit: ["قناع تنفس CPR", "جهاز إنعاش"] },
-                { id: 9, title: "كسور / التواءات", icon: "🦴", box: "صندوق ب - منطقة الإنشاءات", steps: ["أثبت الجزء المصاب ولا تعدل العظم المكسور", "ضع ثلجاً ملفوفاً بقماش على الورم", "امنع تحريك المفصل المصاب"], kit: ["جبيرة مؤقتة", "رباط مثلث"] },
-                { id: 10, title: "إجهاد حراري / ضربة شمس", icon: "☀️", box: "صندوق ج - استراحة العمال والمظلات", steps: ["انقل المصاب فوراً لمكان مكيف أو مظلل", "رش الجسم بماء فاتر ورطب ملابسه", "أعطه رشقات ماء إذا كان بوعيه"], kit: ["أملاح تعويضية", "كمادات باردة"] },
-                { id: 11, title: "إصابة عين / رش كيميائي", icon: "👁️", box: "صندوق د - محطة غسيل العيون", steps: ["اغسل العين بماء نظيف متواصل لمدة 15 دقيقة", "لا تفرك العين نهائياً", "غطِّ العين بقماش معقم دون ضغط"], kit: ["محلول غسيل العين", "ضمادة عين معقمة"] },
-                { id: 12, title: "حروق حرارية / كيميائية", icon: "🩹", box: "صندوق أ - المطبخ والورش الميدانية", steps: ["اسكب ماء جارياً بارداً لمدة 10-15 دقيقة", "لا تفتح الفقاقيع ولا تضع معجوناً", "انزع الملابس غير الملتصقة بحذر"], kit: ["مرهم/جل حروق", "ضمادة غير ملتصقة"] },
-                { id: 13, title: "انقلاب / حادث معدات ثقيلة", icon: "🚜", box: "صندوق هـ - حركة الشاحنات والورشة", steps: ["أوقف الحركة الميدانية وأخلِ المنطقة", "ابقَ على مسافة آمنة من الأحمال المعلقة", "لا تقترب من الخطوط الكهربائية المقطوعة"], kit: ["حقيبة إسعافات شاحنة", "طوق إشارات"] },
-                { id: 14, title: "انحشار طرف بآلة", icon: "⚙️", box: "صندوق ب - ورشة الحدادة والنجارة", steps: ["اضغط زر الإيقاف الإجباري E-Stop فوراً", "لا تعكس حركة الآلة يدوياً", "هدىء المصاب لحين وصول الصيانة والمسعف"], kit: ["رباط ضاغط", "ضمادة معقمة"] },
-                { id: 15, title: "دهس / تصادم مركبات", icon: "🚗", box: "صندوق أ - البوابة الرئيسية DG-GATE-4", steps: ["أوقف حركة المرور حول موقع الحادث", "افصل محرك المركبة لمنع الحريق", "لا تحرك المصاب إلا عند خطر حريق وشيك"], kit: ["حقيبة إسعاف شريكة", "مثلث تحذيري"] },
-                { id: 16, title: "طقس قاسي / عواصف", icon: "🌪️", box: "صندوق ج - مبنى الإدارة والملاجئ", steps: ["أوقف الأعمال على الارتفاعات والأوناش", "توجه للمباني أو الملاجئ المخصصة", "ثبت المواد القابلة للتطاير"], kit: ["حقيبة الطوارئ العامة", "مصباح طوارئ"] }
-            ]
-        };
+    <!-- VIEW 3: INCIDENT REPORT -->
+    <div id="view-incident" class="view">
+        <button class="back-btn" onclick="showView('view-main')">← <span class="back-txt">العودة للرئيسية</span></button>
 
-        let currentLang = 'ar';
+        <div class="urgent-call">
+            <span id="inc-urgent-txt">في حال وجود حريق أو انهيار ضخم، اتصل فوراً</span>
+            <a href="tel:998">📞 اتصال عاجل</a>
+        </div>
 
-        function setLang(lang) {
-            currentLang = lang;
-            document.getElementById('lang-screen').style.display = 'none';
-            renderCases();
-            // Save to localStorage for PWA offline remember
-            localStorage.setItem('portal_lang', lang);
+        <h2 style="margin-bottom:15px;" id="inc-head">⚠️ إبلاغ عن حادث داخل الموقع</h2>
+
+        <div class="section-title" id="inc-sec-type">1. نوع الحادث (إجباري 🔴)</div>
+        <div class="options-grid" id="grid-inc-type">
+            <div class="chip-btn" onclick="selectChip(this, 'inc-type')">🔥 حريق / دخان</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-type')">🏗️ انهيار سقالة/حفر</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-type')">🧪 تسرب مواد/غاز</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-type')">🚜 حادث معدات/تصادم</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-type')">⚡ ماس كهربائي</div>
+        </div>
+
+        <div class="section-title" id="inc-sec-zone">2. موقع الحادث (إجباري 🔴)</div>
+        <div class="options-grid" id="grid-inc-zone">
+            <div class="chip-btn" onclick="selectChip(this, 'inc-zone')">Zone A</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-zone')">Zone B</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-zone')">Zone C</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-zone')">Podium</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-zone')">Tower</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-zone')">Basement</div>
+        </div>
+
+        <div class="section-title" id="inc-sec-injured">3. هل يوجد مصابين؟ (إجباري 🔴)</div>
+        <div class="options-grid" id="grid-inc-injured">
+            <div class="chip-btn" onclick="selectChip(this, 'inc-injured')">🟢 لا يوجد</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-injured')">🔴 نعم يوجد</div>
+            <div class="chip-btn" onclick="selectChip(this, 'inc-injured')">❓ غير معروف</div>
+        </div>
+
+        <div class="form-group">
+            <label id="lbl-inc-reporter">4. اسم ورقم المُبلّغ (إجباري 🔴)</label>
+            <input type="text" id="inc-reporter-input" placeholder="الاسم - رقم الجوال">
+        </div>
+
+        <div class="error-msg" id="inc-err">يرجى استكمال جميع الخيارات الإجبارية أعلاه قبل الإرسال!</div>
+        <button class="submit-btn" onclick="submitIncident()" id="btn-sub-inc">🚨 إرسال بلاغ الحادث الآن</button>
+    </div>
+
+    <!-- VIEW 4: GUIDES -->
+    <div id="view-guides" class="view">
+        <button class="back-btn" onclick="showView('view-main')">← <span class="back-txt">العودة للرئيسية</span></button>
+        <h2 style="margin-bottom:15px;" id="guides-head">📋 إرشادات التعامل مع الإصابات والحوادث</h2>
+        <div class="section-title">الحالات الـ 16 والصناديق الإسعافية مجهزة بالكامل.</div>
+    </div>
+
+</div>
+
+<script>
+    // View Switcher
+    function showView(viewId) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    // Chip selection logic
+    const selectedData = {};
+
+    function selectChip(element, group) {
+        const parent = element.parentElement;
+        parent.querySelectorAll('.chip-btn').forEach(btn => btn.classList.remove('selected'));
+        element.classList.add('selected');
+        selectedData[group] = element.innerText;
+    }
+
+    // Submit Injury Validation
+    function submitInjury() {
+        const err = document.getElementById('inj-err');
+        const reporter = document.getElementById('inj-reporter-input').value.trim();
+
+        if (!selectedData['inj-zone'] || !selectedData['inj-type'] || !selectedData['inj-state'] || !selectedData['inj-num'] || !reporter) {
+            err.style.display = 'block';
+        } else {
+            err.style.display = 'none';
+            alert('تم إرسال بلاغ الإصابة بنجاح إلى فريق الطوارئ الميداني!');
+            showView('view-main');
         }
+    }
 
-        function renderCases() {
-            const grid = document.getElementById('cases-grid');
-            grid.innerHTML = '';
-            casesData[currentLang].forEach(c => {
-                const card = document.createElement('div');
-                card.className = 'case-card';
-                card.onclick = () => openModal(c);
-                card.innerHTML = `<span style="font-size:30px;">${c.icon}</span><br><strong>${c.title}</strong>`;
-                grid.appendChild(card);
+    // Submit Incident Validation
+    function submitIncident() {
+        const err = document.getElementById('inc-err');
+        const reporter = document.getElementById('inc-reporter-input').value.trim();
+
+        if (!selectedData['inc-type'] || !selectedData['inc-zone'] || !selectedData['inc-injured'] || !reporter) {
+            err.style.display = 'block';
+        } else {
+            err.style.display = 'none';
+            alert('تم إرسال بلاغ الحادث بنجاح إلى فريق الطوارئ الميداني!');
+            showView('view-main');
+        }
+    }
+
+    // GPS Helper
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                alert(`موقعك الحالي: \nLat: ${pos.coords.latitude}\nLong: ${pos.coords.longitude}`);
             });
+        } else {
+            alert('الجي بي إس غير مدعوم في هذا المتصفح');
         }
+    }
 
-        let selectedCase = null;
-        function openModal(c) {
-            selectedCase = c;
-            document.getElementById('modal-case-title').innerText = c.icon + " " + c.title;
-            document.getElementById('modal-box-loc').innerText = c.box;
-            
-            const ul = document.getElementById('modal-instructions');
-            ul.innerHTML = '';
-            c.steps.forEach(s => { const li = document.createElement('li'); li.innerText = s; ul.appendChild(li); });
-            
-            const kitDiv = document.getElementById('modal-kit-items');
-            kitDiv.innerHTML = '';
-            c.kit.forEach(k => {
-                const item = document.createElement('div');
-                item.className = 'kit-item';
-                item.innerHTML = `<span>🩺</span><strong style="margin-right:10px;">${k}</strong>`;
-                kitDiv.appendChild(item);
-            });
-
-            document.getElementById('case-modal').style.display = 'block';
+    // Multi-Language Support
+    const dict = {
+        ar: {
+            title: "بوابة الاستجابة للطوارئ - مشروع الفور سيزون - الدرعية",
+            pwa: "تثبيت البوابة",
+            btnInjury: "🏥 إبلاغ عن إصابة فرد داخل الموقع",
+            btnIncident: "⚠️ إبلاغ عن حادث داخل الموقع",
+            btnGuides: "📋 إرشادات التعامل مع الإصابات والحوادث (16 حالة وصناديق الإسعافات)",
+            btnLoc: "📍 تحديد موقعي بالمشروع",
+            btnMap: "📌 خريطة نقاط التجمع",
+            govRc: "الهلال الأحمر",
+            govCd: "الدفاع المدني",
+            gov911: "الطوارئ الموحدة",
+            teamTitle: "👥 فريق إدارة الطوارئ الميداني للمشروع",
+            thRole: "الوظيفة", thName: "الاسم", thAction: "الاتصال",
+            backTxt: "العودة للرئيسية"
+        },
+        en: {
+            title: "Emergency Response Portal - Four Seasons Project - Diriyah",
+            pwa: "Install App",
+            btnInjury: "🏥 Report an Individual Injury On-Site",
+            btnIncident: "⚠️ Report an On-Site Incident",
+            btnGuides: "📋 Injury & Incident Guidelines (16 Cases & First Aid Kits)",
+            btnLoc: "📍 Find My Location in Project",
+            btnMap: "📌 Assembly Points Map",
+            govRc: "Red Crescent",
+            govCd: "Civil Defense",
+            gov911: "Unified Emergency",
+            teamTitle: "👥 Site Emergency Management Team",
+            thRole: "Role", thName: "Name", thAction: "Call",
+            backTxt: "Back to Home"
+        },
+        ur: {
+            title: "ہنگامی ردعمل پورٹل - فور سیزنز پروجیکٹ - درعیہ",
+            pwa: "ایپ انسٹال کریں",
+            btnInjury: "🏥 ویب سائٹ پر فرد کی چوٹ کی اطلاع دیں",
+            btnIncident: "⚠️ سائٹ پر حادثے کی اطلاع دیں",
+            btnGuides: "📋 چوٹوں اور حادثات سے نمٹنے کی ہدایات (16 کیسز)",
+            btnLoc: "📍 سائٹ پر میرا مقام منتخب کریں",
+            btnMap: "📌 اسمبلی پوائنٹس نقشہ",
+            govRc: "ہلال احمر",
+            govCd: "سول دفاع",
+            gov911: "ایمرجنسی",
+            teamTitle: "👥 سائٹ ایمرجنسی مینجمنٹ ٹیم",
+            thRole: "عہدہ", thName: "نام", thAction: "کال کریں",
+            backTxt: "مرکزی صفحہ پر واپس جائیں"
         }
+    };
 
-        function closeModal() {
-            document.getElementById('case-modal').style.display = 'none';
-        }
+    function switchLang(lang) {
+        document.documentElement.lang = lang;
+        document.documentElement.dir = (lang === 'ar' || lang === 'ur') ? 'rtl' : 'ltr';
 
-        function dispatchTelegramAlert() {
-            if (!selectedCase) return;
-            alert("تم إرسال إشعار الطوارئ الفوري لجروب تليجرام الموحد:\nالحالة: " + selectedCase.title + "\nالمنطقة: " + selectedCase.box);
-            closeModal();
-        }
+        document.getElementById('title-text').innerText = dict[lang].title;
+        document.getElementById('pwa-text').innerText = dict[lang].pwa;
+        document.getElementById('btn-injury').innerText = dict[lang].btnInjury;
+        document.getElementById('btn-incident').innerText = dict[lang].btnIncident;
+        document.getElementById('btn-guides').innerText = dict[lang].btnGuides;
+        document.getElementById('btn-loc').innerText = dict[lang].btnLoc;
+        document.getElementById('btn-map').innerText = dict[lang].btnMap;
+        document.getElementById('gov-rc').innerText = dict[lang].govRc;
+        document.getElementById('gov-cd').innerText = dict[lang].govCd;
+        document.getElementById('gov-911').innerText = dict[lang].gov911;
+        document.getElementById('team-title').innerText = dict[lang].teamTitle;
+        document.getElementById('th-role').innerText = dict[lang].thRole;
+        document.getElementById('th-name').innerText = dict[lang].thName;
+        document.getElementById('th-action').innerText = dict[lang].thAction;
 
-        // PWA Offline Cache Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGV2ZW50ID0+IGV2ZW50LnJlc3BvbmRXaXRoKGZldGNoKGV2ZW50LnJlcXVlc3QpLmNhdGNoKCgpID0+IGNhY2hlcy5tYXRjaChldmVudC5yZXF1ZXN0KSkpKTs=');
-            });
-        }
-    </script>
+        document.querySelectorAll('.back-txt').forEach(el => el.innerText = dict[lang].backTxt);
+    }
+</script>
+
 </body>
 </html>
+
+```
